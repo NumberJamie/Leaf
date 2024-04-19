@@ -35,8 +35,7 @@ class Interpreter {
     function runProgramFile(string $filepath): void {
         $fileContent = file_get_contents($filepath);
         if (!$fileContent) { throw new ValueError('Could not read file content.'); }
-        $operations = $this->stripCharacters($fileContent);
-        $this->run($operations);
+        $this->runProgramString($fileContent);
     }
 
     private function run(string $operations): void {
