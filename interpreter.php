@@ -27,12 +27,19 @@ class Interpreter {
         $this->stack = array_fill(0, $this->stackSize, 0);
     }
 
-    function runProgramFile(string $filepath): void {
-        $operations = $this->fileString($filepath);
-        $this->runProgramString($operations);
+    function runProgramString(string $operations): void {
+        $operations = $this->stripCharacters($operations);
+        $this->run($operations);
     }
 
-    function runProgramString(string $operations): void {
+    function runProgramFile(string $filepath): void {
+        $fileContent = file_get_contents($filepath);
+        if (!$fileContent) { throw new ValueError('Could not read file content.'); }
+        $operations = $this->stripCharacters($fileContent);
+        $this->run($operations);
+    }
+
+    private function run(string $operations): void {
         $jumpLookup = $this->seekJumps($operations);
         $operationArray = str_split($operations);
         $pointer = 0;
@@ -77,13 +84,11 @@ class Interpreter {
         }
     }
 
-    private function fileString(string $filepath): string {
+    private function stripCharacters(string $program): string {
         $filteredString = '';
-        $fileContent = file_get_contents($filepath);
-        if (!$fileContent) { throw new ValueError('Could not read file content.'); }
-        for ($index = 0; $index < strlen($fileContent); $index++){
-            if (str_contains($this->allowedCharacters, $fileContent[$index])) {
-                $filteredString .= $fileContent[$index];
+        for ($index = 0; $index < strlen($program); $index++){
+            if (str_contains($this->allowedCharacters, $program[$index])) {
+                $filteredString .= $program[$index];
             }
         }
         return $filteredString;
@@ -98,7 +103,7 @@ class Interpreter {
                 $openingIndexes[] = $index;
             }
             if ($char === Operations::JumpNotZero->value) {
-                if (count($openingIndexes) === 0){ throw new CompileError('Jump mismatch'); }
+                if (count($openingIndexes) === 0) { throw new CompileError('Jump mismatch'); }
                 $lastElement = array_pop($openingIndexes);
                 $jumpLookup[$lastElement] = $index;
             }
