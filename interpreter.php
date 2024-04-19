@@ -8,14 +8,22 @@ enum Operations: string {
     case InputValue = ',';
     case JumpZero = '[';
     case JumpNotZero = ']';
+
+    public static function toString(string $operants = ''): string {
+        foreach (Operations::cases() as $operant) {
+            $operants .= $operant->value;
+        }
+        return $operants;
+    }
 }
 
 class Interpreter {
     private array $stack;
     private int $stackSize = 30000;
-    private string $allowedCharacters = '<>+-.,[]';
+    private string $allowedCharacters;
 
     function __construct() {
+        $this->allowedCharacters = Operations::toString();
         $this->stack = array_fill(0, $this->stackSize, 0);
     }
 
